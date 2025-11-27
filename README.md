@@ -125,3 +125,21 @@ random
 os (optional example code only)
 
 No packages to install.
+
+---
+
+## Reference 8-bit system model
+
+This simulator is loosely inspired by a classic 8-bit, tile-based handheld system:
+
+- 8-bit CPU with a small register set and simple instruction set
+- banked memory (separate work RAM, video RAM, and save / backup RAM)
+- sprite/tile graphics with decompression into working buffers
+- game state stored in a compact serialized format, then re-loaded into working memory for rendering and logic
+
+The code in this repository does **not** emulate that hardware directly.  
+Instead, it abstracts the idea of “memory regions” and “operations” on them.  
+
+For more detail on the underlying hardware model this is loosely based on (without naming any specific console or game), see:
+
+- `HARDWARE_NOTES.md`
