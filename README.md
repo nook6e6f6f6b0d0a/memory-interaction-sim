@@ -1,42 +1,45 @@
-Memory Interaction Simulator
+# Memory Interaction Simulator
 
-A small Python project that models how different operations affect multiple memory regions.
+A small Python project that models how different operations affect multiple memory regions.  
 Everything is written using the Python standard library — no external packages.
 
-Features
+---
 
-A SystemState with five memory regions (R1–R5)
+## Features
 
-A collection of operations (E1–E8) that:
+- A `SystemState` with five memory regions (`R1`–`R5`)
+- A collection of operations (`E1`–`E8`) that:
+  - mix and transform region data
+  - blend or combine regions
+  - reapply prior changes
+  - or choose an operation at random
+- A `run_script` function that:
+  - takes a list of steps
+  - applies each transformation in order
+  - returns the full sequence of system states
+- Requires only Python 3 (no external libraries)
 
-mix and transform region data
+---
 
-blend or combine regions
+## Example: Running the simulator
 
-reapply prior changes
+Run the file directly:
 
-or choose an operation at random
-
-A run_script helper that applies a sequence of transformations and returns all intermediate states
-
-No dependencies beyond Python 3
-
-Example: Running the simulator
-
-You can run the file directly:
-
+```bash
 python engine.py
-
+```
 
 This will:
 
-create an initial state
+- create an initial state  
+- run a small scripted sequence of operations  
+- print each resulting state  
 
-run a short scripted set of operations
+---
 
-print each resulting state
+## Example: Using it from another Python script
 
-Example: Using it in your own Python code
+```python
 from engine import SystemState, Region, run_script
 
 initial = SystemState(
@@ -56,70 +59,77 @@ steps = [
 sequence = run_script(initial, steps)
 for s in sequence:
     print(s)
+```
 
-Design Notes / FAQ
-What type is used for memory regions?
+---
 
-Each region (R1–R5) stores data using Python’s built-in bytes type.
+# Design Notes / FAQ
 
-A bytes value is an ordered sequence of numbers from 0 to 255. Examples:
+## What type is used for memory regions?
 
-b""                  # zero-length, no bytes at all
+Each region (`R1`–`R5`) stores data using Python’s built-in **`bytes`** type.
+
+A `bytes` value is an ordered list of values between 0 and 255. For example:
+
+```python
+b""                  # zero-length, no bytes
 b"\x00"              # one byte with value 0
 b"\x01\xFF\x10"      # three bytes: 1, 255, 16
+```
 
+In this project, each region represents a **fixed-size memory block**, such as 32 or 64 bytes.  
+This means:
 
-In this project, each region represents a fixed-size memory block, such as 32 or 64 bytes.
-That means:
+- A region **should never be truly empty**
+- A region **may contain zero bytes**, which is valid data
 
-A region should never be truly empty
+Example of valid zero-filled memory:
 
-A region may contain zero values, which is still valid data
-
-Example of a valid zero-filled block:
-
+```python
 b"\x00" * 32     # 32 actual bytes
+```
 
-Why does mix_bytes reject empty buffers?
+---
 
-The mix_bytes function is written to operate on real memory blocks.
+## Why does `mix_bytes` reject empty buffers?
 
-A zero-length buffer (b"") means:
+`mix_bytes` is meant to operate on real memory blocks — values that have an actual length.
 
-there are no bytes at all
+A zero-length buffer (`b""`) means:
 
-nothing can be rotated, XORed, swapped, etc.
+- no bytes exist  
+- nothing can be rotated, XORed, or swapped  
+- this usually indicates a programming mistake  
 
-this usually indicates a programming mistake or uninitialized data
+This is not the same as a block of zeros, which is valid.
 
-This is different from a block of zeros, which is still real data.
+So the mixer starts with:
 
-To enforce this distinction, the mixer begins with:
-
+```python
 if data is None or len(data) == 0:
     raise ValueError("mix_bytes expected a non-empty bytes buffer")
-
+```
 
 This ensures:
 
-Invalid empties trigger a clear error
+- Empty buffers cause a clear error  
+- Real memory blocks (even if all zeros) are transformed normally  
 
-Actual memory blocks (even if zero-filled) are transformed correctly
+---
 
-Dependencies
+## Dependencies
 
-Only Python's standard library is used:
+Uses only Python standard library modules:
 
-dataclasses
+- `dataclasses`
+- `typing`
+- `random`
+- `os` (optional example code only)
 
-typing
+No packages to install.
 
-random
+---
 
-os (optional, used only in an example)
+## License
 
-No installation required — just Python 3.
-
-License
-
-MIT License
+MIT License (or choose whichever you prefer)
