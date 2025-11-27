@@ -8,8 +8,8 @@ import os
 
 def rotate_left_bits(data: bytes, n: int) -> bytes:
     """Rotate bits left across the entire buffer."""
-    if not data:
-        return data
+    if data is None or len(data) == 0:
+    raise ValueError("mix_bytes expected a non-empty bytes buffer")
     bit_len = len(data) * 8
     n %= bit_len
     val = int.from_bytes(data, "big")
