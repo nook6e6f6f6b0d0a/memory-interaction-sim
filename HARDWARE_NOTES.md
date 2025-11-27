@@ -6,8 +6,7 @@ This project is loosely inspired by a classic **8-bit handheld system** with:
 - banked memory (work RAM, video RAM, backup/save RAM)
 - tile/sprite-based graphics
 - compact, serialized game state stored in a save area
-
-No specific console, game, or cryptocurrency is referenced here.  
+ 
 The notes below exist only to explain the kind of mental model that informed the design of this simulator.
 
 ---
