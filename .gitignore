@@ -1,0 +1,22 @@
+# Python cache
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment / secrets (if you ever use them)
+.env
+*.env
+secrets.json
+config.json
+
+# Data / dumps / logs
+dumps/
+logs/
+*.bin
+*.sav
+
+# Editor / OS junk
+.DS_Store
+.vscode/
+.idea/
