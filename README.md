@@ -2,43 +2,78 @@
 
 This project models how different operations affect multiple memory regions in a small system.
 
-- Written in pure Python (standard library only).
-- No external dependencies.
-- Designed for experimenting with glitch-like or unusual state transitions.
+- Written in pure Python (standard library only)
+- No external or third-party dependencies
+- Designed for experimenting with glitch-like or unusual state transitions
+
 ## Features
 
-- Models a small system with multiple memory regions (R1–R5).
-- Provides a set of operations (E1–E8) that apply different kinds of transformations:
-  - distortions,
-  - copy/merge behavior,
-  - blend/echo interactions,
-  - and a basic “wildcard” operation that chooses an effect at random.
-- Includes a simple script runner that takes a list of steps and produces the full sequence of states.
-
-## Implementation details
-
-- Language: Python 3
-- Dependencies: **standard library only**
-  - `dataclasses` for lightweight data containers
-  - `typing` for type hints
-  - `random` for the wildcard interaction
-  - `os` only in the small demo block to generate an example buffer (not required for core logic)
-
-There are **no external or third-party libraries** involved.
+- A `SystemState` structure with five regions (`R1`–`R5`)
+- A library of operations (`E1`–`E8`) that:
+  - mix and transform data
+  - combine multiple regions
+  - reapply previous transitions
+  - or choose an operation at random
+- A `run_script` helper that:
+  - takes a list of steps
+  - applies each transformation in order
+  - returns the full sequence of system states
 
 ## Example usage
 
-Run the demo directly:
+Running the script directly:
 
 ```bash
 python engine.py
-## Design notes / FAQ
+```
 
-### What type is used for the memory regions?
+This:
+- creates an initial `SystemState`
+- runs a short transformation script
+- prints each intermediate state
+
+To embed it into another Python file:
+
+```python
+from engine import SystemState, Region, run_script
+
+initial = SystemState(
+    R1=Region(b"\x00" * 64),
+    R2=Region(b"\x00" * 64),
+    R3=Region(b"\x00" * 32),
+    R4=Region(b"\x00" * 32),
+    R5=Region(b"\x00" * 64),
+)
+
+steps = [
+    {"op": "E1", "ctx": {}},
+    {"op": "E5", "ctx": {}},
+    {"op": "E6", "ctx": {"source": "R2"}},
+]
+
+sequence = run_script(initial, steps)
+```
+
+## Implementation notes
+
+- Language: **Python 3**
+- Uses only these built-in modules:
+  - `dataclasses` (for simple value containers)
+  - `typing` (type hints)
+  - `random` (for the wildcard operation)
+  - `os` (used only in an example block; not required for the core engine)
+
+There are **no external libraries**.
+
+---
+
+# Design notes / FAQ
+
+## What type is used for the memory regions?
 
 Each region (`R1`–`R5`) stores its contents as a Python `bytes` object.
 
-A `bytes` value is an ordered sequence of integers between 0 and 255. For example:
+A `bytes` value is an ordered sequence of integers between 0 and 255. Examples:
 
 ```python
 b""                  # zero-length, no bytes at all
@@ -46,27 +81,40 @@ b"\x00"              # one byte, value 0
 b"\x01\xFF\x10"      # three bytes: 1, 255, 16
 ```
 
-In this project, a region is expected to represent a fixed-size memory block (for example, 32 or 64 bytes long). That means the code assumes the buffer will generally be non-empty and contain actual data, even if some of the bytes are zero.
+In this project, a region represents a **fixed-size memory block** (e.g., 32 or 64 bytes).  
+So the system assumes:
 
-### Why does `mix_bytes` reject empty buffers?
+- the buffer is **never truly empty**,  
+- but may contain **zero bytes**, which is still valid data.
 
-The `mix_bytes` function is intended to operate on real memory blocks, not on “no data at all”.
+## Why does `mix_bytes` reject empty buffers?
 
-A true zero-length `bytes` value (`b""`) is different from a block of zeros (like `b"\x00" * 32`):
+The mixer is designed to operate on real memory blocks.
 
-- `b""` means there are **no bytes**.
-- `b"\x00" * 32` means there are **32 bytes**, each with value 0 — this is still valid memory.
+A zero-length buffer (`b""`) means **no bytes exist at all**, which typically indicates:
 
-Because the system is modeled around fixed-size regions, an empty buffer usually indicates a bug or an uninitialized value. For that reason, `mix_bytes` contains a check like:
+- an uninitialized region  
+- a missing value  
+- or accidental misuse of the API
+
+This is different from a valid block of zeros:
+
+```python
+b"\x00" * 32       # 32 bytes of actual data
+```
+
+So the mixer explicitly rejects empty buffers:
 
 ```python
 if data is None or len(data) == 0:
     raise ValueError("mix_bytes expected a non-empty bytes buffer")
 ```
 
-This makes the behavior explicit:
+This guarantees:
 
-- If the caller passes an empty buffer, the function raises a clear error.
-- If the caller passes a non-empty `bytes` block (even if it is all zeros), the function proceeds with the transformation normally.
+- true empties are treated as errors  
+- real memory blocks (even if zero-filled) are processed normally
+
+---
 
 
