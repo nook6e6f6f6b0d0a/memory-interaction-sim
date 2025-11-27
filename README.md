@@ -44,26 +44,29 @@ A `bytes` value is an ordered sequence of integers between 0 and 255. For exampl
 b""                  # zero-length, no bytes at all
 b"\x00"              # one byte, value 0
 b"\x01\xFF\x10"      # three bytes: 1, 255, 16
+```
+
 In this project, a region is expected to represent a fixed-size memory block (for example, 32 or 64 bytes long). That means the code assumes the buffer will generally be non-empty and contain actual data, even if some of the bytes are zero.
 
-Why does mix_bytes reject empty buffers?
+### Why does `mix_bytes` reject empty buffers?
 
-The mix_bytes function is intended to operate on real memory blocks, not on “no data at all”.
+The `mix_bytes` function is intended to operate on real memory blocks, not on “no data at all”.
 
-A true zero-length bytes value (b"") is different from a block of zeros (like b"\x00" * 32):
+A true zero-length `bytes` value (`b""`) is different from a block of zeros (like `b"\x00" * 32`):
 
-b"" means there are no bytes.
+- `b""` means there are **no bytes**.
+- `b"\x00" * 32` means there are **32 bytes**, each with value 0 — this is still valid memory.
 
-b"\x00" * 32 means there are 32 bytes, each with value 0 — this is still valid memory.
+Because the system is modeled around fixed-size regions, an empty buffer usually indicates a bug or an uninitialized value. For that reason, `mix_bytes` contains a check like:
 
-Because the system is modeled around fixed-size regions, an empty buffer usually indicates a bug or an uninitialized value. For that reason, mix_bytes contains a check like:
-
+```python
 if data is None or len(data) == 0:
     raise ValueError("mix_bytes expected a non-empty bytes buffer")
-
+```
 
 This makes the behavior explicit:
 
-If the caller passes an empty buffer, the function raises a clear error.
+- If the caller passes an empty buffer, the function raises a clear error.
+- If the caller passes a non-empty `bytes` block (even if it is all zeros), the function proceeds with the transformation normally.
 
-If the caller passes a non-empty bytes block (even if it is all zeros), the function proceeds with the transformation normally.
+
