@@ -1,42 +1,42 @@
-# Memory Interaction Simulator
+Memory Interaction Simulator
 
-A small Python project that models how different operations affect multiple memory regions.  
+A small Python project that models how different operations affect multiple memory regions.
 Everything is written using the Python standard library — no external packages.
 
----
+Features
 
-## Features
+A SystemState with five memory regions (R1–R5)
 
-- A `SystemState` with five memory regions (`R1`–`R5`)
-- A collection of operations (`E1`–`E8`) that:
-  - mix and transform region data
-  - blend or combine regions
-  - reapply prior changes
-  - or choose an operation at random
-- A `run_script` helper that applies a sequence of transformations and returns all intermediate states
-- No dependencies beyond Python 3
+A collection of operations (E1–E8) that:
 
----
+mix and transform region data
 
-## Example: Running the simulator
+blend or combine regions
+
+reapply prior changes
+
+or choose an operation at random
+
+A run_script helper that applies a sequence of transformations and returns all intermediate states
+
+No dependencies beyond Python 3
+
+Example: Running the simulator
 
 You can run the file directly:
 
-```bash
 python engine.py
-```
+
 
 This will:
 
-- create an initial state  
-- run a short scripted set of operations  
-- print each resulting state  
+create an initial state
 
----
+run a short scripted set of operations
 
-## Example: Using it in your own Python code
+print each resulting state
 
-```python
+Example: Using it in your own Python code
 from engine import SystemState, Region, run_script
 
 initial = SystemState(
@@ -56,77 +56,70 @@ steps = [
 sequence = run_script(initial, steps)
 for s in sequence:
     print(s)
-```
 
----
+Design Notes / FAQ
+What type is used for memory regions?
 
-# Design Notes / FAQ
+Each region (R1–R5) stores data using Python’s built-in bytes type.
 
-## What type is used for memory regions?
+A bytes value is an ordered sequence of numbers from 0 to 255. Examples:
 
-Each region (`R1`–`R5`) stores data using Python’s built-in **`bytes`** type.
-
-A `bytes` value is an ordered sequence of numbers from 0 to 255. Examples:
-
-```python
 b""                  # zero-length, no bytes at all
 b"\x00"              # one byte with value 0
 b"\x01\xFF\x10"      # three bytes: 1, 255, 16
-```
 
-In this project, each region represents a **fixed-size memory block**, such as 32 or 64 bytes.  
+
+In this project, each region represents a fixed-size memory block, such as 32 or 64 bytes.
 That means:
 
-- A region **should never be truly empty**
-- A region **may contain zero values**, which is still valid data
+A region should never be truly empty
+
+A region may contain zero values, which is still valid data
 
 Example of a valid zero-filled block:
 
-```python
 b"\x00" * 32     # 32 actual bytes
-```
 
----
+Why does mix_bytes reject empty buffers?
 
-## Why does `mix_bytes` reject empty buffers?
+The mix_bytes function is written to operate on real memory blocks.
 
-The `mix_bytes` function is written to operate on real memory blocks.
+A zero-length buffer (b"") means:
 
-A **zero-length buffer** (`b""`) means:
+there are no bytes at all
 
-- there are no bytes at all  
-- nothing can be rotated, XORed, swapped, etc.  
-- this usually indicates a programming mistake or uninitialized data  
+nothing can be rotated, XORed, swapped, etc.
+
+this usually indicates a programming mistake or uninitialized data
 
 This is different from a block of zeros, which is still real data.
 
 To enforce this distinction, the mixer begins with:
 
-```python
 if data is None or len(data) == 0:
     raise ValueError("mix_bytes expected a non-empty bytes buffer")
-```
+
 
 This ensures:
 
-- Invalid empties trigger a clear error  
-- Actual memory blocks (even if zero-filled) are transformed correctly  
+Invalid empties trigger a clear error
 
----
+Actual memory blocks (even if zero-filled) are transformed correctly
 
-## Dependencies
+Dependencies
 
 Only Python's standard library is used:
 
-- `dataclasses`
-- `typing`
-- `random`
-- `os` (optional, used only in an example)
+dataclasses
+
+typing
+
+random
+
+os (optional, used only in an example)
 
 No installation required — just Python 3.
 
----
+License
 
-## License
-
-MIT License (or add another license if you prefer).
+MIT License
