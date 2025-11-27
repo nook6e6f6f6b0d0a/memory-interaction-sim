@@ -51,8 +51,8 @@ def mix_bytes(data: bytes, rounds: int = 3) -> bytes:
     - swaps some pairs
     No external primitives, just simple operations.
     """
-    if not data:
-        return data
+       if data is None or len(data) == 0:
+        raise ValueError("mix_bytes expected a non-empty bytes buffer")
 
     buf = bytearray(data)
 
